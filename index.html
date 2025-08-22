@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pomodoro RGB</title>
+</head>
+
+<body>
+    <h1>Pomodoro RGB</h1>
+    <button id="start">Start Pomodoro</button>
+
+    <script>
+        document.getElementById('start').addEventListener('click', () => {
+            console.log('CLICK'); // degub
+            window.pomodoro.start(25, 5); // segundos de prueba
+        });
+    </script>
+</body>
+
+</html>
