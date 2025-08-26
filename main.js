@@ -1,44 +1,110 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, powerMonitor } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const net = require('net');
 
-let pythonProcess = null;
+const OPENRGB_PATH = "C:\\Program Files\\OpenRGB\\OpenRGB.exe";
+const OPENRGB_PORT = 6742;
 
-function createWindow() {
-    const win = new BrowserWindow({
-        width: 400,
-        height: 300,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true,          // Seguridad activada
-            nodeIntegration: false,          // Seguridad activada
-            enableRemoteModule: false
-        }
+// --- util: espera a que el puerto esté escuchando
+function waitForPort(port, host = '127.0.0.1', retries = 60, delayMs = 500) {
+    return new Promise((resolve, reject) => {
+        const tryOnce = (left) => {
+            const s = net.createConnection(port, host);
+            s.once('connect', () => { s.end(); resolve(); });
+            s.once('error', () => {
+                s.destroy();
+                if (left <= 1) reject(new Error('OpenRGB server not reachable'));
+                else setTimeout(() => tryOnce(left - 1), delayMs);
+            });
+        };
+        tryOnce(retries);
     });
-
-    win.loadFile('index.html');
 }
 
-// 🧠 Lógica para lanzar el script Python
-ipcMain.on('start-pomodoro', (event, work, rest) => {
-    if (!pythonProcess) {
-        const scriptPath = path.join(__dirname, 'pomodoro.py');
-
-        pythonProcess = spawn('python', [scriptPath, work, rest]);
-
-        pythonProcess.stdout.on('data', (data) => {
-            console.log(`[PYTHON STDOUT] ${data}`);
+// --- arranca OpenRGB (elevado si ya lo tienes así) y espera el socket
+function ensureOpenRGBServer() {
+    return waitForPort(OPENRGB_PORT).catch(() => {
+        const child = spawn(OPENRGB_PATH, ['--server', '--startminimized'], {
+            detached: true,
+            stdio: 'ignore'
         });
+        child.unref();
+        return waitForPort(OPENRGB_PORT);
+    });
+}
 
-        pythonProcess.stderr.on('data', (data) => {
-            console.error(`[PYTHON STDERR] ${data}`);
-        });
+let didRestore = false;
 
-        pythonProcess.on('close', (code) => {
-            console.log(`Python process exited with code ${code}`);
-            pythonProcess = null;
-        });
+async function restoreRGB() {
+    if (didRestore) return;
+    didRestore = true;
+    try { await ensureOpenRGBServer(); } catch {/* no bloquees salida */ }
+    const script = path.join(__dirname, 'rgbctl.py');
+    // usa 'py -3' si es más fiable en tu máquina
+    spawn('python', [script, 'restore'], { stdio: 'ignore', detached: true }).unref();
+}
+
+// Windows: cierre de sesión / apagado
+app.on('session-end', restoreRGB);
+
+// Señal de apagado del SO (power)
+powerMonitor.on('shutdown', () => {
+    restoreRGB();
+});
+
+
+function createWindow() {
+
+
+    const win = new BrowserWindow({
+        width: 400,
+        height: 350,
+        resizable: false,
+        maximizable: false,
+        frame: true, // Ponemos más adelante los botones de cerrar y minimizar personalizados?
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+    win.loadFile('index.html');
+    win.removeMenu();
+}
+
+// --- NUEVO: acciones RGB atómicas (work/break/restore/off)
+ipcMain.on('rgb-action', async (_event, action) => {
+    try {
+        await ensureOpenRGBServer();
+    } catch (e) {
+        console.error('No pude arrancar/conectar con OpenRGB:', e.message);
+        return;
     }
+
+    // Lanza rgbctl.py con la acción solicitada
+    const script = path.join(__dirname, 'rgbctl.py');
+    spawn('python', [script, String(action)], { stdio: 'ignore', detached: true }).unref();
+});
+
+// (Opcional) Si quieres, elimina el handler viejo 'start-pomodoro'
+
+// ---
+app.on('before-quit', restoreRGB);
+app.on('session-end', restoreRGB);
+app.on('window-all-closed', () => {
+    restoreRGB().finally(() => {
+        app.quit(); // <-- esto fuerza la salida real
+    });
+});
+
+
+
+process.on('exit', restoreRGB);
+
+powerMonitor.on('shutdown', () => {
+    restoreRGB();
 });
 
 app.whenReady().then(createWindow);
+

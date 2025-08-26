@@ -2,20 +2,35 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Pomodoro RGB</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
     <h1>Pomodoro RGB</h1>
-    <button id="start">Start Pomodoro</button>
-
-    <script>
-        document.getElementById('start').addEventListener('click', () => {
-            console.log('CLICK'); // degub
-            window.pomodoro.start(25, 5); // segundos de prueba
-        });
-    </script>
+    <div class="row">
+        <label>Work (min) <input type="number" id="work" value="25" min="1" /></label>
+        <label>Break (min) <input type="number" id="rest" value="5" min="1" /></label>
+    </div>
+    <div class="row">
+        <label>Cycles (short→long)
+            <input type="number" id="cycles" value="4" min="1" />
+        </label>
+        <label>Long break (min)
+            <input type="number" id="longbreak" value="15" min="1" />
+        </label>
+    </div>
+    <div class="row">
+        <button id="start">Start</button>
+        <button id="pause" class="secondary">Pause</button>
+        <button id="stop" class="secondary">Stop</button>
+    </div>
+    <div class="status">
+        <div>State: <span id="state">idle</span></div>
+        <div>Remaining: <span id="remaining">00:00</span></div>
+    </div>
+    <script src="renderer.js"></script>
 </body>
 
 </html>
