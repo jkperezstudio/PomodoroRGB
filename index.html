@@ -8,29 +8,30 @@
 </head>
 
 <body>
-    <h1>Pomodoro RGB</h1>
-    <div class="row">
-        <label>Work (min) <input type="number" id="work" value="25" min="1" /></label>
-        <label>Break (min) <input type="number" id="rest" value="5" min="1" /></label>
-    </div>
-    <div class="row">
-        <label>Cycles (short→long)
-            <input type="number" id="cycles" value="4" min="1" />
-        </label>
-        <label>Long break (min)
-            <input type="number" id="longbreak" value="15" min="1" />
-        </label>
-    </div>
-    <div class="row">
-        <button id="start">Start</button>
-        <button id="pause" class="secondary">Pause</button>
-        <button id="stop" class="secondary">Stop</button>
-    </div>
-    <div class="status">
-        <div>State: <span id="state">idle</span></div>
-        <div>Remaining: <span id="remaining">00:00</span></div>
-    </div>
-    <script src="renderer.js"></script>
+    <main>
+        <div id="remaining" class="timer">25:00</div>
+        <span id="state" style="display:none">idle</span>
+
+        <!-- Placeholder de inputs requeridos por renderer.js -->
+        <div style="display:none">
+            <input type="number" id="work" value="25">
+            <input type="number" id="rest" value="5">
+            <input type="number" id="cycles" value="3">
+            <input type="number" id="longbreak" value="15">
+        </div>
+
+        <div class="progress">
+            <div class="fill"></div>
+        </div>
+
+        <div class="controls">
+            <button id="pause" class="ctrl"><img src="assets/icons/pause.svg" alt="pause"></button>
+            <button id="start" class="ctrl"><img src="assets/icons/play.svg" alt="start"></button>
+            <button id="stop" class="ctrl"><img src="assets/icons/stop.svg" alt="stop"></button>
+        </div>
+    </main>
+
 </body>
+
 
 </html>

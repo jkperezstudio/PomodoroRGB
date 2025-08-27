@@ -15,6 +15,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const elCycles = document.getElementById('cycles');
     const elLongBreak = document.getElementById('longbreak');
 
+    const btnMin = document.getElementById('btn-min');
+    const btnClose = document.getElementById('btn-close');
+
+    if (btnMin) btnMin.addEventListener('click', () => window.electronAPI?.minimize());
+    if (btnClose) btnClose.addEventListener('click', () => window.electronAPI?.close());
+
     let phase = 'idle';         // idle | work | break | paused
     let remaining = 0;
     let timerId = null;

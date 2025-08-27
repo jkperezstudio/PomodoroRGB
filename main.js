@@ -59,10 +59,10 @@ function createWindow() {
 
     const win = new BrowserWindow({
         width: 400,
-        height: 350,
+        height: 300,
         resizable: false,
         maximizable: false,
-        frame: true, // Ponemos más adelante los botones de cerrar y minimizar personalizados?
+        frame: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -85,6 +85,15 @@ ipcMain.on('rgb-action', async (_event, action) => {
     // Lanza rgbctl.py con la acción solicitada
     const script = path.join(__dirname, 'rgbctl.py');
     spawn('python', [script, String(action)], { stdio: 'ignore', detached: true }).unref();
+});
+
+ipcMain.on('window-minimize', (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (win) win.minimize();
+});
+ipcMain.on('window-close', (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender);
+    if (win) win.close();
 });
 
 // (Opcional) Si quieres, elimina el handler viejo 'start-pomodoro'
