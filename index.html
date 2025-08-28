@@ -2,22 +2,41 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro RGB</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <main>
-        <div id="remaining" class="timer">25:00</div>
-        <span id="state" style="display:none">idle</span>
+    <!-- Barra superior arrastrable -->
+    <div class="title-bar"></div>
 
-        <!-- Placeholder de inputs requeridos por renderer.js -->
+    <!-- Botón de configuración -->
+    <button id="btn-config" class="icon-btn">
+        <img src="assets/icons/config.svg" alt="Configuración">
+    </button>
+
+    <!-- Controles de ventana -->
+    <div class="window-controls">
+        <button id="btn-min" class="window-btn">
+            <img src="assets/icons/minimize.svg" alt="Minimizar">
+        </button>
+        <button id="btn-close" class="window-btn">
+            <img src="assets/icons/close.svg" alt="Cerrar">
+        </button>
+    </div>
+
+    <!-- Contenido principal -->
+    <main>
+        <div id="remaining" class="timer"></div>
+
+        <!-- Inputs ocultos para configuración -->
         <div style="display:none">
-            <input type="number" id="work" value="25">
-            <input type="number" id="rest" value="5">
-            <input type="number" id="cycles" value="3">
-            <input type="number" id="longbreak" value="15">
+            <input type="number" id="work" value="25"> <!--25-->
+            <input type="number" id="rest" value="5"> <!--5-->
+            <input type="number" id="cycles" value="4"> <!--4-->
+            <input type="number" id="longbreak" value="15"> <!--15-->
         </div>
 
         <div class="progress">
@@ -31,7 +50,54 @@
         </div>
     </main>
 
-</body>
+    <!-- Modal de configuración -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content">
+            <h2>Configuración</h2>
 
+            <div class="form-row">
+                <label for="modal-work">Tiempo de trabajo (min):</label>
+                <input type="number" id="modal-work" value="25" min="1" max="120">
+            </div>
+
+            <div class="form-row">
+                <label for="modal-rest">Tiempo de descanso (min):</label>
+                <input type="number" id="modal-rest" value="5" min="1" max="60">
+            </div>
+
+            <div class="form-row">
+                <label for="modal-cycles">Número de ciclos:</label>
+                <input type="number" id="modal-cycles" value="3" min="1" max="10">
+            </div>
+
+            <div class="form-row">
+                <label for="modal-longbreak">Descanso largo (min):</label>
+                <input type="number" id="modal-longbreak" value="15" min="1" max="120">
+            </div>
+
+            <div class="modal-actions">
+                <button id="config-save">Guardar</button>
+                <button id="config-close">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-backdrop" class="modal-backdrop"></div>
+
+    <!-- Modal genérico de confirmación -->
+    <div id="confirm-modal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2 id="confirm-title">Confirmación</h2>
+            <p id="confirm-message" style="margin:8px 0 0 0;">¿Seguro?</p>
+            <div class="modal-actions">
+                <button id="confirm-cancel">Cancelar</button>
+                <button id="confirm-accept">Aceptar</button>
+            </div>
+        </div>
+    </div>
+    <div id="confirm-backdrop" class="modal-backdrop"></div>
+
+
+    <script src="renderer.js"></script>
+</body>
 
 </html>

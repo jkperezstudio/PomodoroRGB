@@ -2,7 +2,7 @@ html, body {
   height: 100%; 
   margin: 0; 
   overflow: hidden; 
-  box-sizing: border-box; 
+  box-sizing: border-box;
 }
 
 *, *::before, *::after { 
@@ -10,12 +10,94 @@ html, body {
 }
 
 body {
-  background: #161820;     /* ← SIN esto verás blanco */
+  background: #161820;
   color: #eaeaea;
   font-family: system-ui, sans-serif;
-  -webkit-app-region: drag;
+  -webkit-app-region: no-drag;
 }
 
+/* Barra de título arrastrable - ESTO ES LO QUE FALTABA */
+.title-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  -webkit-app-region: drag; /* CRÍTICO: Esta es el área arrastrable */
+  z-index: 10;
+  debug background: rgba(255,0,0,0.1);
+}
+
+/* Contenedor de controles de ventana */
+.window-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 12px;
+  z-index: 20;
+  /*-webkit-app-region: no-drag;*/
+}
+
+/* Botón de configuración */
+#btn-config {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 20;
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  width: 28px;
+  height: 28px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+#btn-config:hover {
+  opacity: 1;
+}
+
+#btn-config img {
+  width: 100%;
+  height: auto;
+  filter: invert(1) brightness(1.2);
+}
+
+#btn-config[disabled] {
+  opacity: .5;
+  filter: grayscale(1);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+/* Botones de control de ventana */
+.window-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  width: 28px;
+  height: 28px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  -webkit-app-region: no-drag;
+}
+
+.window-btn:hover {
+  opacity: 1;
+}
+
+.window-btn img {
+  width: 100%;
+  height: auto;
+  filter: invert(1) brightness(1.2);
+}
+
+/* Contenido principal - NO arrastrable */
 main {
   display: flex;
   flex-direction: column;
@@ -23,14 +105,17 @@ main {
   justify-content: center;
   gap: 20px;
   height: 100vh;
+  padding: 20px;
+  /*-webkit-app-region: drag;*/
 }
 
-/* lo básico para que se vea algo */
 .timer { 
   font-size: 72px;
-   font-weight: 300;
-    letter-spacing: 2px; 
-  }
+  font-weight: 300;
+  letter-spacing: 2px; 
+  margin-top: 20px;
+  -webkit-app-region: drag;
+}
 
 .progress { 
   width: 320px; 
@@ -43,41 +128,251 @@ main {
 .progress .fill { 
   height: 100%;
   width: 0%;
-  background: #3a6df0; 
-}
-
-.controls, .controls * { 
-  -webkit-app-region: no-drag; 
+  background: #c03a2b; 
+  transition: width 1s linear;
 }
 
 .controls { 
   display: flex; 
   gap: 24px; 
   justify-content: center; 
-  align-items: center; 
-  -webkit-app-region: no-drag; }
-
-.controls .ctrl{
-  width: 90px; 
-  height: 60px; 
-  background:#3a3f54; 
-  border:none; 
-  border-radius:14px;
-  cursor:pointer; 
-  box-shadow:0 10px #111; 
-  display:flex; 
-  align-items:center; 
-  justify-content:center;
+  align-items: center;
+  
 }
 
-.controls .ctrl img{ 
-  width:28px; 
-  height:28px; 
-  display:block; 
+.controls .ctrl {
+  width: 90px; 
+  height: 60px; 
+  background: #3a3f54; 
+  border: none; 
+  border-radius: 14px;
+  cursor: pointer; 
+  box-shadow: 0 10px #111; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  transition: all 0.1s;
+}
+
+.controls .ctrl img { 
+  pointer-events: none;
+  width: 28px; 
+  height: 28px; 
+  display: block; 
   filter: invert(1) brightness(1.15); 
+}
+
+.controls .ctrl:hover { 
+  filter: brightness(1.15); 
 }
 
 .controls .ctrl:active {
   transform: translateY(4px);
   box-shadow: 0 6px #111;
 }
+
+.controls .ctrl:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 10px #111;
+}
+
+/* Estilos para el modal - COMPACTO */
+#config-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001; /* Más alto que el backdrop */
+  background: #2a2e3e;
+  border: 1px solid #3a3f54;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  color: #eaeaea;
+  display: none;
+  width: 260px; /* Más compacto */
+  max-height: 90vh; /* Asegurar que cabe en la ventana */
+  overflow-y: auto;
+  -webkit-app-region: no-drag;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: none;
+  -webkit-app-region: no-drag;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Menos espacio entre elementos */
+}
+
+.modal-content h2 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+.modal-content label {
+  font-weight: 500;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.modal-content input {
+  padding: 6px 8px;
+  border: 1px solid #3a3f54;
+  border-radius: 4px;
+  background: #1e212e;
+  color: #eaeaea;
+  font-size: 13px;
+  width: 100%;
+}
+
+.modal-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+#config-close {
+  background: #3a6df0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 13px;
+}
+
+#config-close:hover {
+  background: #2c5ad8;
+}
+
+#config-save {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 13px;
+}
+
+#config-save:hover {
+  background: #218838;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.form-row label {
+  flex: 1;
+  font-size: 12px;
+}
+
+.form-row input {
+  width: 70px;   /* ajusta a tu gusto */
+  padding: 4px 6px;
+  text-align: center;
+}
+
+/* Confirm modal: hereda .modal y .modal-content */
+#confirm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;                 /* por encima del backdrop (1000) */
+  background: #2a2e3e;
+  border: 1px solid #3a3f54;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  color: #eaeaea;
+  display: none;                  /* lo abres por JS */
+  width: 260px;
+  max-height: 90vh;
+  overflow-y: auto;
+  opacity: 0;                     /* para el fade */
+  transition: opacity .15s ease;
+  -webkit-app-region: no-drag;
+}
+
+/* Botones del confirm con los mismos colores que el config */
+#confirm-accept {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 13px;
+}
+#confirm-accept:hover { background: #218838; }
+
+#confirm-cancel {
+  background: #3a6df0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 13px;
+}
+#confirm-cancel:hover { background: #2c5ad8; }
+
+/* Confirm: botón aceptar en modo peligro (Stop) */
+#confirm-accept.danger {
+  background: #e74c3c;
+}
+#confirm-accept.danger:hover { background: #c0392b; }
+#confirm-accept.danger:active { background: #a93226; }
+
+.controls .ctrl.pressed {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+  opacity: 0.88;
+}
+
+
+
+
+.dev-only { display: none; }           /* oculta por defecto */
+.dev-visible { display: inline-flex; } /* se activará desde JS */
+
+/* Estados visuales para LEDs (opcional - para debugging en desarrollo) 
+.work-state {
+  border-top: 3px solid #ff4444; 
+}
+
+.rest-state {
+  border-top: 3px solid #44ff44; 
+}
+
+.paused-state {
+  border-top: 3px solid #ffaa44; 
+}
+
+.idle-state {
+  border-top: 3px solid transparent; 
+}
+*/

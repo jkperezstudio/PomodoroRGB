@@ -55,8 +55,6 @@ powerMonitor.on('shutdown', () => {
 
 
 function createWindow() {
-
-
     const win = new BrowserWindow({
         width: 400,
         height: 300,
@@ -67,10 +65,14 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nodeIntegration: false
+            // Removemos enableBlinkFeatures ya que no es necesario
         }
     });
     win.loadFile('index.html');
     win.removeMenu();
+
+    // Para depurar, puedes abrir las herramientas de desarrollo
+    // win.webContents.openDevTools();
 }
 
 // --- NUEVO: acciones RGB atómicas (work/break/restore/off)
